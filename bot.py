@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
+import config
 import pyclassic, re, time, asyncio
 from pyclassic import sanitize
 
 # server_name = "Matthilde's Private Server"
 server_name = "+cope's experimental server"
 
-auth = pyclassic.ClassiCubeAuth("maelle", "6M%#%sUK5UhS#wo$48%5uz97An5Dz#22n")
+auth = pyclassic.ClassiCubeAuth(config.username, config.password)
 player = pyclassic.PyClassic(auth)
 
 @player.event
