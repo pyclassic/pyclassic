@@ -14,6 +14,16 @@ class Player:
     pitch: int
     yaw: int
 
+class SimpleAuth:
+    def __init__(self, username, mppass):
+        self.session = mppass
+        self.username = username
+
+    def connect(self, **kargs):
+        assert "ip" in kargs and "port" in kargs
+        ip, port = kargs['ip'], kargs['port']
+        return ip, port, self.username, self.session
+    
 class ClassiCubeAuth:
     def __init__(self, username, password):
         self.session = self.get_session(username, password)
@@ -59,6 +69,22 @@ class ClassiCubeAuth:
 
         servers = self.session.get(api_url("/servers"))
         return servers.json().get('servers')
+
+    def connect(self, **kargs):
+        serverlist = self.server_list()
+        server = [x for x in serverlist
+                  if contains_all(kargs, x)]
+        if len(server) == 0:
+            raise PyClassicError("Server not found")
+        server = server[0]
+
+        ip, port = server['ip'], server['port']
+        username = self.username
+        mppass = server.get('mppass')
+        if not mppass:
+            raise PyClassicError("mppass not found, is the user authenticated?")
+
+        return ip, port, username, mppass
 
 ######################################################################
 
@@ -133,7 +159,8 @@ class PyClassic:
     async def set_block(self, x, y, z, block_id):
         await self.move(x-1, y, z)
         self.send(5, x, y, z, 1, block_id)
-        self.map[x, y, z] = block_id
+        if self.map:
+            self.map[x, y, z] = block_id
     def get_block(self, x, y, z):
         return self.map[x, y, z]
 
@@ -169,20 +196,10 @@ class PyClassic:
     def connect(self, **kargs):
         if self.socket:
             raise PyClassicError("The socket is not null, plase disconnect.")
-        serverlist = self.auth.server_list()
-        server = [x for x in serverlist
-                  if contains_all(kargs, x)]
-        if len(server) == 0:
-            raise PyClassicError("Server not found")
-        server = server[0]
-
-        ip, port = server['ip'], server['port']
-        username = self.auth.username
-        mppass = server.get('mppass')
-        if not mppass:
-            raise PyClassicError("mppass not found, is the user authenticated?")
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        ip, port, username, mppass = self.auth.connect(**kargs)
+        
         self.socket = s
         s.connect((ip, port))
         s.sendall(b'\x00' + encode_packet(packet_id_c[0x0], 7,
@@ -254,7 +271,7 @@ class PyClassic:
                     self.map = pyclassic.map.ClassicMap(
                         self.map_cache, w, h, l)
                     self.map_cache = b''
-                elif info.name == 'SET_BLOCK':
+                elif info.name == 'SET_BLOCK' and self.map:
                     x, y, z, block_id = packet
                     self.map[x, y, z] = block_id
                     
