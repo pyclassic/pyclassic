@@ -97,7 +97,6 @@ class PyClassic:
         self.loop = None
         self.map = None
         self.map_cache = b''
-
     ##################################################################
     def log(self, *msg):
         print("[#]", ' '.join(msg))
@@ -203,16 +202,24 @@ class PyClassic:
         self.socket = s
         s.connect((ip, port))
         s.sendall(b'\x00' + encode_packet(packet_id_c[0x0], 7,
-                                          username, mppass, 0))
-        pid, auth_packet = self.recv()
-        if not auth_packet:
+                                          username, mppass, 0x42)) ##TODO: make 0x42 configurable (cpe on or off)
+
+        pid, auth_or_cpe = self.recv()
+    
+        if not auth_or_cpe:
             self.disconnect()
             raise PyClassicError("Failed to connect to server.")
         elif pid.name == "DISCONNECT":
-            self.disconnect()
-            raise PyClassicError(f"Kicked: {auth_packet[1]}")
+                self.disconnect()
+                raise PyClassicError(f"Kicked: {auth_or_cpe[1]}")
 
-        return auth_packet[1], auth_packet[2]
+        if pid.name == "EXT_INFO":
+            print("Server software: " + auth_or_cpe[0] + " with " + str(auth_or_cpe[1]) + " available extensions.")
+            self.send(0x10, "pyclassic", 2) ##TODO: Maybe make this cleaner?
+            self.send(0x11, "BlockDefinitions", 1) # Why are we not checking for cross compataiblity here? 
+            self.send(0x11, "CustomBlocks", 1) # Cross compataiblity will not change anything, as the underlying map code can use any ID
+        else:
+            return auth_or_cpe[1], auth_or_cpe[2]
     ##################################################################
 
     async def event_loop(self):
@@ -274,14 +281,15 @@ class PyClassic:
                 elif info.name == 'SET_BLOCK' and self.map:
                     x, y, z, block_id = packet
                     self.map[x, y, z] = block_id
-                    
+                elif info.name == "CUSTOM_BLOCK_LEVEL":
+                    self.send(0x13, 1)
                 await asyncio.sleep(0)
         except KeyboardInterrupt:
             self.loop.stop()
             return
     ##################################################################
 
-    def run(self, **kargs): # TODO: finish
+    async def run(self, **kargs): # TODO: finish
         err = None
         self.connect(**kargs)
 
@@ -289,7 +297,7 @@ class PyClassic:
         # self.loop.create_task(self.event_loop())
         try:
             # asyncio.run(self.event_loop())
-            self.loop.run_until_complete(self.event_loop())
+            self.loop.run_until_complete(await self.event_loop())
         except Exception as e:
             err = e
         finally:

@@ -5,7 +5,7 @@ from dataclasses import dataclass
 class PyClassicError(Exception): pass
 
 _packet_fmt_types = {
-    "BYTE": 1, "SBYTE": 1, "SHORT": 2, "STRING": 64, "ARRAY": 1024
+    "BYTE": 1, "SBYTE": 1, "SHORT": 2, "STRING": 64, "ARRAY": 1024, "INT": 4
 }
 
 _cc_api = "http://www.classicube.net/api"
@@ -55,6 +55,7 @@ def encode_packet(fmt, *args):
         elif f == "SHORT":  packet += encint(a&0xffff, 2)
         elif f == "STRING": packet += encstr(a[:64])
         elif f == "ARRAY":  packet += a[:1024]
+        elif f == "INT":    packet += encint(a, 4)
     return packet
 def decode_packet(fmt, packet: bytes):
     if len(fmt) != len(packet): return
@@ -66,6 +67,8 @@ def decode_packet(fmt, packet: bytes):
         elif f == "SHORT":  args.append(decint(packet[:2]))
         elif f == "STRING": args.append(decstr(packet[:64]))
         elif f == "ARRAY":  args.append(packet[:1024])
+        elif f == "INT":    args.append(decint(packet[:4]))
+
         packet = packet[_packet_fmt_types[f]:]
 
     return args
@@ -86,11 +89,20 @@ packet_id_s = {
     0xc: PacketFormat(12, "DESPAWN", ['BYTE']),
     0xd: PacketFormat(13, "MESSAGE", ['SBYTE', 'STRING']),
     0xe: PacketFormat(14, "DISCONNECT", ['STRING']),
-    0xf: PacketFormat(15, "USERTYPE", ['BYTE'])
+    0xf: PacketFormat(15, "USERTYPE", ['BYTE']),
+    0x10: PacketFormat(16, "EXT_INFO", ["STRING", "SHORT"]),
+    0x11: PacketFormat(17, "EXT_ENTRY", ["STRING", "INT"]),
+    0x13: PacketFormat(19, "CUSTOM_BLOCK_LEVEL", ["BYTE"]),
+    0x23: PacketFormat(35, "DEFINE_BLOCK", ["BYTE", "STRING", "BYTE", "BYTE", "BYTE", "BYTE", "BYTE", "BYTE", "BYTE", "BYTE", "BYTE", "BYTE", "BYTE", "BYTE", "BYTE", "BYTE", "BYTE"]),
+    0x24: PacketFormat(36, "REMOVE_BLOCK_DEFINITION", ["BYTE"])
 }
+
 packet_id_c = {
     0x0: PacketFormat(1, "AUTH", ['BYTE', 'STRING', 'STRING', 'BYTE']),
     0x5: PacketFormat(5, "SET_BLOCK", ['SHORT']*3 + ['BYTE']*2),
     0x8: PacketFormat(8, "POS_ORI", ['BYTE'] + ['SHORT']*3 + ['BYTE']*2),
-    0xd: PacketFormat(13, "MESSAGE", ['BYTE', 'STRING'])
+    0xd: PacketFormat(13, "MESSAGE", ['BYTE', 'STRING']),
+    0x10: PacketFormat(16, "EXT_INFO", ["STRING", "SHORT"]),
+    0x11: PacketFormat(17, "EXT_ENTRY", ["STRING", "INT"]),
+    0x13: PacketFormat(19, "CUSTOM_BLOCK_LEVEL", ["BYTE"])
 }
