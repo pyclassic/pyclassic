@@ -112,6 +112,8 @@ class PyClassic:
             self.event_functions['connect'] = fn
         elif n == "on_move":
             self.event_functions['move'] = fn
+        elif n == "on_set_block":
+            self.event_functions['set_block'] = fn
         elif n.startswith("on_"):
             t = find_packet_id(n[3:].upper())
             if t == -1: return
@@ -280,6 +282,7 @@ class PyClassic:
                     self.map_cache = b''
                 elif info.name == 'SET_BLOCK' and self.map:
                     x, y, z, block_id = packet
+                    run_event("set_block", x, y, z, block_id, self.map[x, y, z])
                     self.map[x, y, z] = block_id
                 elif info.name == "CUSTOM_BLOCK_LEVEL":
                     self.send(0x13, 1)
@@ -300,8 +303,7 @@ class PyClassic:
             self.loop.run_until_complete(await self.event_loop())
         except Exception as e:
             err = e
-        finally:
-            self.loop.close()
+
         self.loop = None
 
         self.disconnect()
