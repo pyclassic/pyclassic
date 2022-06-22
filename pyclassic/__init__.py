@@ -5,6 +5,8 @@ import pyclassic.map
 from dataclasses import dataclass
 from pyclassic.utils import *
 
+PYCLASSIC_VERSION = "dev-2022"
+
 @dataclass
 class Player:
     name: str
@@ -89,7 +91,7 @@ class ClassiCubeAuth:
 ######################################################################
 
 class PyClassic:
-    def __init__(self, auth):
+    def __init__(self, auth, client_name = None):
         self.auth = auth
         self.players = {}
         self.event_functions = {}
@@ -97,6 +99,11 @@ class PyClassic:
         self.loop = None
         self.map = None
         self.map_cache = b''
+        if not client_name:
+            self.client_name = f"pyclassic {PYCLASSIC_VERSION}"
+        else:
+            self.client_name = client_name
+
     ##################################################################
     def log(self, *msg):
         print("[#]", ' '.join(msg))
@@ -105,19 +112,16 @@ class PyClassic:
 
     ##################################################################
     def event(self, fn):
+        packetpref, pref = "on_packet_", "on_"
         n = fn.__name__
-        if n == "on_packet_recv":
-            self.event_functions['recv'] = fn
-        elif n == "on_connect":
-            self.event_functions['connect'] = fn
-        elif n == "on_move":
-            self.event_functions['move'] = fn
-        elif n == "on_set_block":
-            self.event_functions['set_block'] = fn
-        elif n.startswith("on_"):
-            t = find_packet_id(n[3:].upper())
+        if n.startswith(packetpref):
+            t = find_packet_id(n[len(packetpref):].upper())
             if t == -1: return
             self.event_functions[t] = fn
+        elif n.startswith(pref):
+            t = n[len(pref):].lower()
+            if t in ['recv', 'connect', 'move', 'set_block']:
+                self.event_functions[t] = fn
     ##################################################################
 
     def recv(self):
@@ -163,7 +167,10 @@ class PyClassic:
         if self.map:
             self.map[x, y, z] = block_id
     def get_block(self, x, y, z):
-        return self.map[x, y, z]
+        if self.map:
+            return self.map[x, y, z]
+        else:
+            raise PyClassicError("Map must be loaded first.")
 
     ##################################################################
 
@@ -207,19 +214,25 @@ class PyClassic:
                                           username, mppass, 0x42)) ##TODO: make 0x42 configurable (cpe on or off)
 
         pid, auth_or_cpe = self.recv()
-    
+
         if not auth_or_cpe:
             self.disconnect()
             raise PyClassicError("Failed to connect to server.")
         elif pid.name == "DISCONNECT":
                 self.disconnect()
-                raise PyClassicError(f"Kicked: {auth_or_cpe[1]}")
+                error = auth_or_cpe[1] if len(auth_or_cpe) == 2 else ""
+                raise PyClassicError(f"Kicked! {auth_or_cpe[1]}")
 
         if pid.name == "EXT_INFO":
-            print("Server software: " + auth_or_cpe[0] + " with " + str(auth_or_cpe[1]) + " available extensions.")
-            self.send(0x10, "pyclassic", 2) ##TODO: Maybe make this cleaner?
-            self.send(0x11, "BlockDefinitions", 1) # Why are we not checking for cross compataiblity here? 
-            self.send(0x11, "CustomBlocks", 1) # Cross compataiblity will not change anything, as the underlying map code can use any ID
+            # Maybe turn the socket into a "server" class or smth?
+            #    we could store server information in there also.
+            # TODO: Maybe make this cleaner?
+            self.send(0x10, self.client_name, 2)
+            # Why are we not checking for cross compataiblity here? 
+            self.send(0x11, "BlockDefinitions", 1)
+            # Cross compataiblity will not change anything, as the
+            # underlying map code can use any ID
+            self.send(0x11, "CustomBlocks", 1) 
         else:
             return auth_or_cpe[1], auth_or_cpe[2]
     ##################################################################
@@ -282,7 +295,8 @@ class PyClassic:
                     self.map_cache = b''
                 elif info.name == 'SET_BLOCK' and self.map:
                     x, y, z, block_id = packet
-                    run_event("set_block", x, y, z, block_id, self.map[x, y, z])
+                    run_event("set_block", x, y, z, block_id,
+                              self.map[x, y, z])
                     self.map[x, y, z] = block_id
                 elif info.name == "CUSTOM_BLOCK_LEVEL":
                     self.send(0x13, 1)
@@ -292,7 +306,7 @@ class PyClassic:
             return
     ##################################################################
 
-    async def run(self, **kargs): # TODO: finish
+    def run(self, **kargs): # TODO: finish
         err = None
         self.connect(**kargs)
 
@@ -300,7 +314,12 @@ class PyClassic:
         # self.loop.create_task(self.event_loop())
         try:
             # asyncio.run(self.event_loop())
-            self.loop.run_until_complete(await self.event_loop())
+            # Putting the run function as async does not make sense
+            # at all and adds some useless boilerplate to code.
+
+            # I don't even know why you did that
+            # .run_until_complete is pretty much the same thing as await.
+            self.loop.run_until_complete(self.event_loop())
         except Exception as e:
             err = e
 

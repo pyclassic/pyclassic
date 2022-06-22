@@ -1,8 +1,17 @@
 # Map stuff
 import gzip, pyclassic
-from pyclassic.utils import decint
+from pyclassic.utils import decint, encint
 
 class ClassicMapError(Exception): pass
+
+def load(filename):
+    with gzip.open(filename) as f:
+        offset = f.read(6)
+        x, y, z = [decint(offset[x:x+2]) for x in range(0,6,2)]
+        size = f.read(6)
+        width, height, length = [decint(size[x:x+2]) for x in range(0,6,2)]
+        data = f.read()
+    return (x, y, z), ClassicMap(data, width, height, length, compressed = False)
 
 class ClassicMap:
     def __init__(self, data: bytes, width, height, length,
@@ -58,3 +67,10 @@ class ClassicMap:
         y = (idx // self.width) // self.length
         z = (idx // self.width) % self.length
         return x, y, z
+
+    def save(self, filename, compresslevel = 9, ox=0,oy=0,oz=0):
+        with gzip.open(filename, "wb") as f:
+            f.write(encint(ox) + encint(oy) + encint(oz))
+            f.write(encint(self.width) + encint(self.height) + \
+                    encint(self.length))
+            f.write(self.data)
