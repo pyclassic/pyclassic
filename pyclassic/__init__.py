@@ -148,7 +148,8 @@ class PyClassic:
                 elif info.name == "SPAWN":
                     self.update_player(*packet)
                 elif info.name == "DESPAWN":
-                    del self.players[packet[0]]
+                    if self.players.get(packet[0]):
+                        del self.players[packet[0]]
 
                 elif info.name == "TELEPORT":
                     run_event("move", info.name, *packet)

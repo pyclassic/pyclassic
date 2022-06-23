@@ -86,7 +86,11 @@ class Client:
         x *= 32
         y *= 32
         z *= 32
+        self.move_precise(x, y, z, pitch, yaw)
+
+    def move_precise(self, x, y, z, pitch = 0, yaw = 0):
         self.send(0x8, -1, x, y, z, pitch, yaw)
+        
 
     def set_block(self, x, y, z, block_id):
         self.move(x-1, y, z)

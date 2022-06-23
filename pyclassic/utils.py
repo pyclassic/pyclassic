@@ -86,7 +86,7 @@ packet_id_s = {
     0x9: PacketFormat(9, "POS_ORI", ['SBYTE']*4 + ['BYTE']*2),
     0xa: PacketFormat(10, "POS", ['SBYTE']*4),
     0xb: PacketFormat(11, "ORI", ['SBYTE'] + ['BYTE']*2),
-    0xc: PacketFormat(12, "DESPAWN", ['BYTE']),
+    0xc: PacketFormat(12, "DESPAWN", ['SBYTE']),
     0xd: PacketFormat(13, "MESSAGE", ['SBYTE', 'STRING']),
     0xe: PacketFormat(14, "DISCONNECT", ['STRING']),
     0xf: PacketFormat(15, "USERTYPE", ['BYTE']),
