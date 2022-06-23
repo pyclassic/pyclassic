@@ -6,6 +6,9 @@ PyClassic
 CPE (Classic Protcol Extension). It implements a block queue, an event system,
 map loader, and much more.
 
+If you have access to this repository, consider yourself lucky because this is
+a private project in order to prevent script kiddies from being annoying.
+
 Features
 --------
 
