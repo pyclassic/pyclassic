@@ -87,6 +87,8 @@ class PyClassic:
         return self.client.move(*args)
     async def set_block(self, *args):
         return self.client.set_block(*args)
+    async def message(self, *args):
+        return self.client.message(*args)
 
     ##################################################################
 
