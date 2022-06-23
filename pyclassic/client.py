@@ -95,5 +95,7 @@ class Client:
     def set_block(self, x, y, z, block_id):
         self.move(x-1, y, z)
         self.send(5, x, y, z, 1, block_id)
+        """
         if self.map:
             self.map[x, y, z] = block_id
+        """

@@ -85,8 +85,10 @@ class PyClassic:
     # Backward compat
     async def move(self, *args):
         return self.client.move(*args)
-    async def set_block(self, *args):
-        return self.client.set_block(*args)
+    async def set_block(self, x, y, z, bid):
+        r = self.client.set_block(x, y, z, bid)
+        if self.map:
+            self.map[x, y, z] = bid
     async def message(self, *args):
         return self.client.message(*args)
 
