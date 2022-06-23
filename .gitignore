@@ -1,5 +1,6 @@
 *
 !*/
-!README.txt
+!README.rst
+!pyproject.toml
 !.gitignore
 !pyclassic/*.py

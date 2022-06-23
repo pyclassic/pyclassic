@@ -1,0 +1,9 @@
+[project]
+name = "pyclassic"
+description = "Minecraft Classic Protocol implementation in Python"
+version = "dev-2022"
+authors = [
+    { name = "matthilde" },
+    { name = "yourfriend" }
+]
+dependencies = ["requests"]

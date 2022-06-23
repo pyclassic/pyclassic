@@ -1,11 +1,14 @@
-#!/usr/bin/env python3
+"""
+PyClassic - Minecraft Classic Protocol implementation in Python.
+"""
 # PyClassic - Minecraft Classic client
 import socket, json, requests, time, asyncio, re
 import pyclassic.auth, pyclassic.map, pyclassic.client
 from dataclasses import dataclass
 from pyclassic.utils import *
 
-PYCLASSIC_VERSION = "dev-2022"
+__version__ = "dev-2022"
+PYCLASSIC_VERSION = __version__ 
 
 @dataclass
 class Player:
@@ -20,7 +23,26 @@ class Player:
 ######################################################################
 
 class PyClassic:
+    """
+    The PyClassic class is the "main" class. It handles the event
+    system which the core design of this library. However you do not
+    have to use this class. See client.Client.
+
+    It supports event handling of course but also multibot which can
+    be useful for building stuff using queue.ThreadedQueue.
+    """
     def __init__(self, client, multibot = [], client_name = None):
+        """
+        :param client: the client that will be used
+        :param multibot: array of clients or auth objects for multibots
+        :param client_name: name of the client, defaults to pyclassic if None
+
+        :type client:  pyclassic.auth.SimpleAuth or pyclassic.client.Client
+        :type multibot: list[pyclassic.auth.SimpleAuth or pyclassic.client.Client]
+        :type client_name: str or None
+
+        :raise pyclassic.PyClassicError: if the client parameter is invalid.
+        """
         # self.auth = auth
         if type(client) is pyclassic.auth.SimpleAuth:
             # For backward compatibility but to also keep it
@@ -52,8 +74,14 @@ class PyClassic:
 
     ##################################################################
     def log(self, *msg):
+        """
+        Logs stuff
+        """
         print("[#]", ' '.join(msg))
     def die(self, *msg):
+        """
+        Logs stuff but more dramatically
+        """
         print("[!]", ' '.join(msg))
 
     ##################################################################
