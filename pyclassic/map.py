@@ -11,9 +11,12 @@ def load(filename):
         size = f.read(6)
         width, height, length = [decint(size[x:x+2]) for x in range(0,6,2)]
         data = f.read()
-    return (x, y, z), ClassicMap(data, width, height, length, compressed = False)
+    return (x, y, z), ClassicMap(data,
+                                 width, height, length,
+                                 compressed = False)
 
 class ClassicMap:
+    # NOTE: Maybe we could add offset in the class.
     def __init__(self, data: bytes, width, height, length,
                  compressed = True):
         self.data = bytearray(
@@ -30,6 +33,8 @@ class ClassicMap:
             return self.slice_down(vector)
         if len(vector) != 3: raise ClassicMapError("not a vector")
         x, y, z = vector
+        if x > self.width or y > self.height or z > self.length:
+            raise ClassicMapError("Position outside of map boundaries.")
 
         idx = x+(z*self.width)+(y*self.width*self.length)
         block = self.blocks[idx]
@@ -74,3 +79,7 @@ class ClassicMap:
             f.write(encint(self.width) + encint(self.height) + \
                     encint(self.length))
             f.write(self.data)
+
+    def get_queue(self, ox = 0, oy = 0, oz = 0):
+        return [(*[x+y for x, y in zip(self.getpos(idx),(ox,oy,oz))], bid)
+                for idx, bid in enumerate(self.blocks)]
