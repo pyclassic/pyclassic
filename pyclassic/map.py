@@ -81,5 +81,6 @@ class ClassicMap:
             f.write(self.data)
 
     def get_queue(self, ox = 0, oy = 0, oz = 0):
-        return [(*[x+y for x, y in zip(self.getpos(idx),(ox,oy,oz))], bid)
+        return [pyclassic.queue.Block(
+            *[x+y for x, y in zip(self.getpos(idx),(ox,oy,oz))], bid)
                 for idx, bid in enumerate(self.blocks)]

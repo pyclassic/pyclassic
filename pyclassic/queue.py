@@ -65,7 +65,7 @@ class ThreadedQueue:
             else:
                 self.current_queue = self.queues.pop(0)
 
-        delay = self.delay / len(self.bots)
+        delay = self.delay # / len(self.bots)
         bot_id = 0
         while self.current_queue != []:
             if self.thread_event != None and \
