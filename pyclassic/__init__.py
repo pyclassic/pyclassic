@@ -1,5 +1,7 @@
 """
 PyClassic - Minecraft Classic Protocol implementation in Python.
+
+This is the main classes of the module.
 """
 # PyClassic - Minecraft Classic client
 import socket, json, requests, time, asyncio, re
@@ -12,6 +14,10 @@ PYCLASSIC_VERSION = __version__
 
 @dataclass
 class Player:
+    """
+    This is a simple class to store player data such as their position,
+    their username and their head direction.
+    """
     name: str
     x: int
     y: int
@@ -26,23 +32,27 @@ class PyClassic:
     """
     The PyClassic class is the "main" class. It handles the event
     system which the core design of this library. However you do not
-    have to use this class. See client.Client.
+    have to use this class. See :class:`pyclassic.client.Client`.
 
     It supports event handling of course but also multibot which can
-    be useful for building stuff using queue.ThreadedQueue.
+    be useful for building stuff using
+    :class:`pyclassic.queue.ThreadedQueue`.
+
+    :param client: The main client that will be used for event
+                   handling
+    :param multibot: array of clients or auth objects for multibot
+    :param client_name: name of the client, defaults to
+                        "pyclassic <VERSION>" if None
+
+    :type client:  :class:`pyclassic.auth.SimpleAuth` or
+                   :class:`pyclassic.client.Client`
+    :type multibot: list[:class:`pyclassic.auth.SimpleAuth` or
+                         :class:`pyclassic.client.Client`], optional
+    :type client_name: str or None, optional
+
+    :raise pyclassic.PyClassicError: if the client parameter is invalid.
     """
     def __init__(self, client, multibot = [], client_name = None):
-        """
-        :param client: the client that will be used
-        :param multibot: array of clients or auth objects for multibots
-        :param client_name: name of the client, defaults to pyclassic if None
-
-        :type client:  pyclassic.auth.SimpleAuth or pyclassic.client.Client
-        :type multibot: list[pyclassic.auth.SimpleAuth or pyclassic.client.Client]
-        :type client_name: str or None
-
-        :raise pyclassic.PyClassicError: if the client parameter is invalid.
-        """
         # self.auth = auth
         if type(client) is pyclassic.auth.SimpleAuth:
             # For backward compatibility but to also keep it
@@ -86,6 +96,13 @@ class PyClassic:
 
     ##################################################################
     def event(self, fn):
+        """
+        Decorator to define an event.
+
+        :param fn: Event function. The function must be named as the
+                   wanted event.
+        :type fn: function
+        """
         packetpref, pref = "on_packet_", "on_"
         n = fn.__name__
         if n.startswith(packetpref):
@@ -98,26 +115,77 @@ class PyClassic:
                 self.event_functions[t] = fn
     ##################################################################
 
-    def recv(self): return self.client.recv()
+    def recv(self):
+        """
+        see :func:`pyclassic.client.Client.recv`
+        """
+        return self.client.recv()
 
-    def send(self, pid, *args): return self.client.send(pid, *args)
+    def send(self, pid, *args):
+        """
+        see :func:`pyclassic.client.Client.send`
+        """
+        return self.client.send(pid, *args)
     ##################################################################
 
     async def asend(self, pid, *args):
+        """
+        Actually not very useful, sends stuff but asynchronously.
+
+        see :func:`pyclassic.PyClassic.send`
+        """
         self.send(pid, *args)
     def get_block(self, x, y, z):
+        """
+        Retrieve a block from `self.map`
+
+        :param x: X position
+        :param y: Y position
+        :param z: Z position
+
+        :type x: int
+        :type y: int
+        :type z: int
+
+        :raise pyclassic.PyClassicError: The map has not been loaded.
+
+        :return: The ID of the wanted block.
+        :rtype: int
+        """
         if self.map:
             return self.map[x, y, z]
         else:
             raise PyClassicError("Map must be loaded first.")
     # Backward compat
     async def move(self, *args):
+        """
+        Moves the main client.
+        see :func:`pyclassic.client.Client.move`
+        """
         return self.client.move(*args)
     async def set_block(self, x, y, z, bid):
+        """
+        Makes the main client place a block and updates the map if
+        there is one.
+
+        See :func:`pyclassic.client.Client.set_block`
+
+        :type x: int
+        :type y: int
+        :type z: int
+
+        :param bid: Block ID to place
+        :type bid: int
+        """
         r = self.client.set_block(x, y, z, bid)
         if self.map:
             self.map[x, y, z] = bid
     async def message(self, *args):
+        """
+        Send a message from the main client.
+
+        See :func:`pyclassic.client.Client.message`
+        """
         return self.client.message(*args)
 
     ##################################################################
@@ -145,15 +213,35 @@ class PyClassic:
 
     ##################################################################
     def disconnect(self):
+        """
+        Disconnects the main client.
+        
+        see :func:`pyclassic.client.Client.disconnect`
+        """
         return self.client.disconnect()
     def connect(self, **kargs):
+        """
+        Connects the main client to a server.
+
+        see :func:`pyclassic.client.Client.connect`
+        """
         return self.client.connect(**kargs)
 
     def connect_multibot(self, delay = 4, **kargs):
+        """
+        Connects the multibot army to a server.
+
+        see :func:`pyclassic.client.Client.connect`
+        """
         for bot in self.clones:
             time.sleep(delay)
             bot.connect(**kargs)
     def disconnect_multibot(self):
+        """
+        Disconnects the whole bot army.
+
+        see :func:`pyclassic.client.Client.disconnect`
+        """
         for bot in self.clones: bot.disconnect()
         
     ##################################################################
@@ -161,6 +249,14 @@ class PyClassic:
 
 
     async def event_loop(self):
+        """
+        Runs the asynchronous event loop.
+
+        .. warning::
+            This function **SHOULD NOT** be run manually unless you
+            are doing cursed shit.
+            See :func:`pyclassic.PyClassic.run`
+        """
         def run_event(name, *args):
             fn = self.event_functions.get(name)
             if fn:
@@ -230,6 +326,15 @@ class PyClassic:
     ##################################################################
 
     def run(self, delay = 4, **kargs): # TODO: finish
+        """
+        Connects all clients and run the event loop.
+
+        :param delay: Delay of connection between each multibot
+                      connection.
+        :param kargs: Arguments such as the IP address, port, etc.
+                      It depends of the :class:`pyclassic.auth`
+                      class.
+        """
         err = None
         self.connect(**kargs)
         if self.clones:

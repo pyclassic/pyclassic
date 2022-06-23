@@ -1,9 +1,29 @@
-# Client class
+"""
+The client module contains... well... the Client class that is used
+to handle the protocol itself such as packet receiving and sending.
+
+It can be used independently from :class:`pyclassic.PyClassic` if
+you want to. However you won't have the event system obviously.
+
+This class allows the connection and packet handling as well as some
+additional methods to make programming easier.
+"""
 import pyclassic, socket
 from pyclassic.utils import *
 from pyclassic.auth import SimpleAuth
 
 class Client:
+    """
+    Client class
+
+    :param auth: Authentication class to connect the client to a server.
+    :param client_name: Client name, can be changed as you wish but
+                        defaults to `"pyclassic <VERSION>"`. Can be
+                        useful sometimes :troll:
+
+    :type auth: pyclassic.auth.SimpleAuth
+    :type client_name: str or None, optional
+    """
     def __init__(self, auth: SimpleAuth, client_name = None):
         self.auth = auth
         self.socket = None
