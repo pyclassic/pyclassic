@@ -54,7 +54,7 @@ class PyClassic:
     """
     def __init__(self, client, multibot = [], client_name = None):
         # self.auth = auth
-        if type(client) is pyclassic.auth.SimpleAuth:
+        if isinstance(client, pyclassic.auth.SimpleAuth):
             # For backward compatibility but to also keep it
             # concise.
             self.client = pyclassic.client.Client(
@@ -207,9 +207,9 @@ class PyClassic:
         p = self.players[playerid]
         
         if name: p.name = name
-        if x: p.x = p.x+x if relative else x
-        if y: p.y = p.y+y if relative else y
-        if z: p.z = p.z+z if relative else z
+        if x: p.x = p.x+x if relative and p.x else x
+        if y: p.y = p.y+y if relative and p.y else y
+        if z: p.z = p.z+z if relative and p.z else z
         if pitch: p.pitch = pitch
         if yaw: p.yaw = yaw
 
