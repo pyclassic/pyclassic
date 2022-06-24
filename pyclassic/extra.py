@@ -4,11 +4,39 @@ from pyclassic.client import Client
 from pyclassic.auth import SimpleAuth
 
 def throwaway(username, clientname = None, **kargs):
+    """
+    Makes a "throw-away" account. This can only be used on servers that
+    does not check user authentication.
+    It uses :class:`pyclassic.auth.SimpleAuth` as auth object.
+
+    :param username:   Username of the throwaway, will also be the
+                       specified salt
+    :param clientname: The name of the client :troll:
+    :param kargs:      Arguments to pass to the auth object on
+                       connection
+
+    :type username:   str
+    :type clientname: str or None, optional
+    
+    :return: The freshly new client that has been created just for you
+    :rtype:  :class:`pyclassic.client.Client`
+    """
     player = Client(SimpleAuth(username, username), client_name = clientname)
     player.connect(**kargs)
     return player
 
 def download_map(bot):
+    """
+    Hacky function to download the map from a server. I would not
+    recommend using it unless you're doing hacky automated shit like
+    I do.
+
+    :param bot: The client to receive data with
+    :type bot:  :class:`pyclassic.client.Client`
+
+    :return: The downloaded, decompressed and parsed map.
+    :rtype:  :class:`pyclassic.map.ClassicMap`
+    """
     m = b''
     while True:
         info, packet = bot.recv()

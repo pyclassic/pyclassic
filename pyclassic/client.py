@@ -33,6 +33,14 @@ class Client:
             self.client_name = client_name
 
     def recv(self):
+        """
+        Receives a packet and decodes it appropriately.
+
+        :raise pyclassic.utils.PyClassicError: no more data is received.
+        :return: packet information and the decoded packet
+                 (without the packet ID as there is packet info)
+        :rtype:  (:class:`pyclassic.utils.PacketFormat`, list)
+        """
         s = self.socket
         data = s.recv(1)
         if not data:
@@ -52,12 +60,40 @@ class Client:
         return packet_info, decode_packet(packet_info, data)
 
     def send(self, pid, *args):
+        """
+        Sends a packet to the server.
+
+        :param pid: Packet ID
+        :param args: arguments
+
+        :type pid: int
+
+        :raise pyclassic.utils.PyClassicError: Invalid packet.
+        """
         packet = encode_packet(packet_id_c[pid], *args)
         if not packet:
             raise PyClassicError("Invalid send packet.")
         self.socket.sendall(bytes([pid]) + packet)
-
+ 
     def connect(self, **kargs):
+        """
+        Connects to a server. Will use the specified
+        :class:`pyclassic.auth.SimpleAuth`-based class to retrieve the
+        IP, port, username and server salt.
+        See :func:`pyclassic.auth.SimpleAuth.connect`
+
+        If a socket is already active, it will disconnect it first then
+        reconnect.
+
+        :param kargs: Arguments to pass to the auth object to retrieve
+                      the server and the credentials to connect.
+        :raise pyclassic.utils.PyClassicError: Failed to connect.
+        :raise pyclassic.utils.PyClassicError: Kicked from server on
+                                               connect.
+
+        :return: Server information or None
+        :rtype:  (str, str) or None
+        """
         if self.socket:
             # raise PyClassicError("The socket is not null, plase disconnect.")
             self.disconnect()
@@ -95,24 +131,74 @@ class Client:
             return auth_or_cpe[1], auth_or_cpe[2]
 
     def disconnect(self):
+        """
+        Disconnects the client if it's connected to a server,
+        otherwise does a great amount of nothing.
+        """
         if self.socket:
             self.socket.close()
             self.socket = None
 
     def message(self, message):
+        """
+        Sends a message to the server.
+
+        :param message: Message to send
+        :type message:  str
+        """
         self.send(0xd, 0xff, message)
 
     def move(self, x, y, z, pitch = 0, yaw = 0):
+        """
+        Teleports the player at the specified position and direction.
+        This functions relies on block position.
+        See :func:`pyclassic.client.Client.move_precise` for more
+        precise teleportation.
+
+        .. note::
+            Pitch and yaw angles are between 0 and 255 and not 0 and
+            359 since these fits in a byte.
+
+        :type x: int
+        :type y: int
+        :type z: int
+        :type pitch: int, optional
+        :type yaw:   int, optional
+        """
         x *= 32
         y *= 32
         z *= 32
         self.move_precise(x, y, z, pitch, yaw)
 
     def move_precise(self, x, y, z, pitch = 0, yaw = 0):
+        """
+        Teleports the player at the specified position and direction.
+
+        .. note::
+            Pitch and yaw angles are between 0 and 255 and not 0 and
+            359 since these fits in a byte.
+
+        :type x: int
+        :type y: int
+        :type z: int
+        :type pitch: int, optional
+        :type yaw:   int, optional
+        """
         self.send(0x8, -1, x, y, z, pitch, yaw)
         
 
     def set_block(self, x, y, z, block_id):
+        """
+        Make the client place a block at a specified position.
+
+        .. note::
+            Abuse this and you'll get kicked lmao.
+
+        :type x: int
+        :type y: int
+        :type z: int
+        :type block_int: int
+        """
         self.move(x-1, y, z)
         self.send(5, x, y, z, 1, block_id)
         """

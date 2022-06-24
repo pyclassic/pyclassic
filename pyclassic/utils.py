@@ -1,3 +1,8 @@
+"""
+This module contains a bunch of useful functions. I am not going to
+document this because those are mostly helpers for other modules. I
+will only document the functions that can be useful for the developer.
+"""
 import re
 from dataclasses import dataclass
 
@@ -19,6 +24,15 @@ decint = lambda n, s = True: int.from_bytes(n, byteorder='big',
 encint = lambda n, l = 2: n.to_bytes(l, 'big')
 api_url = lambda n: _cc_api + n
 def sanitize(msg):
+    """
+    Sanitizes message input (removes the &x stuff from a message).
+
+    :param msg: Message to sanitize
+    :type msg:  str
+
+    :return: Sanitized message
+    :rtype:  str
+    """
     return re.sub('\&.', '', msg)
 def contains_all(needle, haystack):
     for el in needle:

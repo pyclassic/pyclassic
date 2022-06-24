@@ -4,3 +4,4 @@
 !pyproject.toml
 !.gitignore
 !pyclassic/*.py
+*~

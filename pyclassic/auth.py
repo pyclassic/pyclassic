@@ -21,7 +21,8 @@ class SimpleAuth:
 
     def connect(self, **kargs):
         """
-        Provides information for :class:`PyClassic.client.Client`
+        Provides information for :class:`PyClassic.client.Client` in
+        order to connect to a server.
 
         :param ip: IP Address of the server
         :param port: Port of the server
@@ -133,7 +134,8 @@ class ClassiCubeAuth(SimpleAuth):
 
     def connect(self, **kargs):
         """
-        Connects the user to a server.
+        Provides information for :class:`PyClassic.client.Client` in
+        order to connect to a server.
 
         :param kargs: Server list query, can be the server name, the IP
                       or even the port. Can be multiple at once. Log in
