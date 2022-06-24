@@ -9,7 +9,8 @@ map loader, and much more.
 If you have access to this repository, consider yourself lucky because this is
 a private project in order to prevent script kiddies from being annoying.
 
-Docs will be available soon:tm: lol
+Documentation can be found here:
+https://063ba2f779d68f7932612a3632b8096f.matthil.de
 
 Features
 --------
