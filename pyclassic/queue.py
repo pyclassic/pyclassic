@@ -96,7 +96,7 @@ class ThreadedQueue:
         :type queue:  list[:class:`pyclassic.queue.Block`]
         """
         self.check_lock()
-        self.queues.append(queue)
+        self.queues.append(queue.copy())
 
     def remove_queue(self, i):
         """

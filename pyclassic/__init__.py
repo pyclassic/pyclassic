@@ -199,6 +199,8 @@ class PyClassic:
                       yaw = None,
                       relative = False):
         name = sanitize(name) if name else None
+        dtz = lambda n: 0 if None else n
+        x, y, z, pitch, yaw = [dtz(_) for _ in (x,y,z,pitch,yaw)]
         if playerid not in self.players:
             self.players[playerid] = Player(name,x,y,z,pitch,yaw)
             return
