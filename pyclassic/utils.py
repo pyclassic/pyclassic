@@ -47,7 +47,7 @@ def contains_all(needle, haystack):
 class PacketFormat:
     pid: int
     name: str
-    content: list[str]
+    content: list
 
     def __len__(self):
         return sum(_packet_fmt_types[x] for x in self.content)
