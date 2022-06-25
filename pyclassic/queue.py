@@ -56,7 +56,10 @@ class ThreadedQueue:
         self.thread = None
         self.thread_event = None
         self.delay = delay
+
         if type(player) is pyclassic.PyClassic:
+            self.player = player
+
             if player.clones:
                 self.bots = player.clones
             else:
@@ -96,8 +99,11 @@ class ThreadedQueue:
         :type queue:  list[:class:`pyclassic.queue.Block`]
         """
         self.check_lock()
-        self.queues.append(queue.copy())
 
+        if self.player:
+            self.queues.append([x for x in queue.copy() if self.player.get_block(x.x, x.y, x.z) != x.bid])
+        else:
+            self.queues.append(queue.copy())
     def remove_queue(self, i):
         """
         Removes a queue from the job queue.
