@@ -107,7 +107,7 @@ packet_id_s = {
     0x10: PacketFormat(16, "EXT_INFO", ["STRING", "SHORT"]),
     0x11: PacketFormat(17, "EXT_ENTRY", ["STRING", "INT"]),
     0x13: PacketFormat(19, "CUSTOM_BLOCK_LEVEL", ["BYTE"]),
-    0x23: PacketFormat(35, "DEFINE_BLOCK", ["BYTE", "STRING", "BYTE", "BYTE", "BYTE", "BYTE", "BYTE", "BYTE", "BYTE", "BYTE", "BYTE", "BYTE", "BYTE", "BYTE", "BYTE", "BYTE", "BYTE"]),
+    0x23: PacketFormat(35, "DEFINE_BLOCK", ["BYTE", "STRING", "BYTE", "BYTE", "BYTE", "BYTE", "BYTE", "BYTE", "BYTE", "BYTE", "BYTE", "BYTE", "BYTE", "BYTE", "BYTE", "BYTE"]),
     0x24: PacketFormat(36, "REMOVE_BLOCK_DEFINITION", ["BYTE"])
 }
 
