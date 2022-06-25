@@ -12,6 +12,15 @@ pyclassic.auth module
    :undoc-members:
    :show-inheritance:
 
+pyclassic.batch module
+----------------------
+
+.. automodule:: pyclassic.batch
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
 pyclassic.client module
 -----------------------
 

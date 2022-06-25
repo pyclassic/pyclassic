@@ -5,7 +5,8 @@ This is the main classes of the module.
 """
 # PyClassic - Minecraft Classic client
 import socket, json, requests, time, asyncio, re
-import pyclassic.auth, pyclassic.map, pyclassic.client
+# import pyclassic.auth, pyclassic.map, pyclassic.client
+import pyclassic
 from dataclasses import dataclass
 from pyclassic.utils import *
 
@@ -43,16 +44,19 @@ class PyClassic:
     :param multibot: array of clients or auth objects for multibot
     :param client_name: name of the client, defaults to
                         "pyclassic <VERSION>" if None
+    :param build_delay: Block placing delay for multibot building
 
     :type client:  :class:`pyclassic.auth.SimpleAuth` or
                    :class:`pyclassic.client.Client`
     :type multibot: list[:class:`pyclassic.auth.SimpleAuth` or
                          :class:`pyclassic.client.Client`], optional
     :type client_name: str or None, optional
+    :type build_delay: float, optional
 
     :raise pyclassic.PyClassicError: if the client parameter is invalid.
     """
-    def __init__(self, client, multibot = [], client_name = None):
+    def __init__(self, client, multibot = [], client_name = None,
+                 build_delay = 0.03):
         # self.auth = auth
         if isinstance(client, pyclassic.auth.SimpleAuth):
             # For backward compatibility but to also keep it
@@ -66,21 +70,29 @@ class PyClassic:
                                  "(must be Client or Auth)")
 
         # Invalid elements will be ignored.
+        #: Queue object for multibot, None if there are no multibot.
+        self.queue: pyclassic.queue.ThreadQueue = None
         self.clones = [
             x if type(x) is pyclassic.client.Client else
             pyclassic.client.Client(x, client_name = client_name)
             for x in multibot]
 
-        self.players = {}
+        #: List of players, dynamically updated with the event system.
+        self.players: dict = {}
         self.event_functions = {}
         self.socket = None
         self.loop = None
-        self.map = None
+        #: Map object that stores the downloaded map.
+        self.map: pyclassic.map.ClassicMap = None
         self.map_cache = b''
         if not client_name:
             self.client_name = f"pyclassic {PYCLASSIC_VERSION}"
         else:
             self.client_name = client_name
+
+        if self.clones != []:
+            self.queue = pyclassic.queue.ThreadedQueue(self,
+                                               delay = build_delay)
 
     ##################################################################
     def log(self, *msg):
@@ -314,6 +326,8 @@ class PyClassic:
                     self.map = pyclassic.map.ClassicMap(
                         self.map_cache, w, h, l)
                     self.map_cache = b''
+                    if self.queue:
+                        self.queue.map = self.map
                 elif info.name == 'SET_BLOCK' and self.map:
                     x, y, z, block_id = packet
                     run_event("set_block", x, y, z, block_id,

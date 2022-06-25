@@ -59,6 +59,8 @@ class ThreadedQueue:
 
         if type(player) is pyclassic.PyClassic:
             self.map = player.map
+            print(player.map)
+            print(self.map)
 
             if player.clones:
                 self.bots = player.clones
@@ -101,7 +103,7 @@ class ThreadedQueue:
         :type queue:  list[:class:`pyclassic.queue.Block`]
         """
         self.check_lock()
-
+        
         if self.map:
             self.queues.append([x for x in queue.copy() if self.map[(x.x, x.y, x.z)] != x.bid])
         else:
