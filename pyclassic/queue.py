@@ -45,12 +45,12 @@ class ThreadedQueue:
     :type player:  :class:`pyclassic.PyClassic` or a list of
                    :class:`pyclassic.client.Client` instances.
     :type delay:   float, optional
-
+    :type map:     :class:`pyclassic.map.ClassicMap`, optional
     :raise pyclassic.queue.QueueError: The list is empty or the
                                        PyClassic instance has no
                                        bot array.
     """
-    def __init__(self, player: pyclassic.PyClassic, delay = 0.03):
+    def __init__(self, player: pyclassic.PyClassic, map = None, delay = 0.03):
         self.current_queue = None
         self.queues = []
         self.thread = None
@@ -58,18 +58,20 @@ class ThreadedQueue:
         self.delay = delay
 
         if type(player) is pyclassic.PyClassic:
-            self.player = player
+            self.map = player.map
 
             if player.clones:
                 self.bots = player.clones
             else:
                 self.bots = [player.client]
+            
+            return
         elif type(player) is list:
             if not player: raise QueueError("Empty list.")
             self.bots = player
         else:
             self.bots = [player]
-
+        self.map = None
     def is_active(self):
         """
         Checks if there is a running thread.
@@ -100,8 +102,8 @@ class ThreadedQueue:
         """
         self.check_lock()
 
-        if self.player:
-            self.queues.append([x for x in queue.copy() if self.player.get_block(x.x, x.y, x.z) != x.bid])
+        if self.map:
+            self.queues.append([x for x in queue.copy() if self.map[(x.x, x.y, x.z)] != x.bid])
         else:
             self.queues.append(queue.copy())
     def remove_queue(self, i):
