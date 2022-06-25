@@ -105,7 +105,8 @@ class ThreadedQueue:
         self.check_lock()
         
         if self.map:
-            self.queues.append([x for x in queue.copy() if self.map[(x.x, x.y, x.z)] != x.bid])
+            self.queues.append([x for x in queue
+                                if self.map[x.x, x.y, x.z] != x.bid])
         else:
             self.queues.append(queue.copy())
     def remove_queue(self, i):

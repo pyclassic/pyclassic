@@ -71,7 +71,7 @@ class PyClassic:
 
         # Invalid elements will be ignored.
         #: Queue object for multibot, None if there are no multibot.
-        self.queue: pyclassic.queue.ThreadQueue = None
+        self.queue: pyclassic.queue.ThreadedQueue = None
         self.clones = [
             x if type(x) is pyclassic.client.Client else
             pyclassic.client.Client(x, client_name = client_name)

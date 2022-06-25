@@ -167,3 +167,22 @@ class ClassicMap:
         return [pyclassic.queue.Block(
             *[x+y for x, y in zip(self.getpos(idx),(ox,oy,oz))], bid)
                 for idx, bid in enumerate(self.blocks)]
+
+    def get_queue_from_region(self, x1, y1, z1, x2, y2, z2,
+                              ox = 0, oy = 0, oz = 0):
+
+        ax, ay, az = [min(a,b) for a, b in zip((x1,y1,z1), (x2,y2,z2))]
+        bx, by, bz = [max(a,b) for a, b in zip((x1,y1,z1), (x2,y2,z2))]
+
+        queue = []
+        for x in range(ax, bx+1):
+            for y in range(ay, by+1):
+                for z in range(az, bz+1):
+                    if x >= self.width or \
+                       y >= self.height or \
+                       z >= self.length:
+                        continue
+                    queue.append(pyclassic.queue.Block(ox+x, oy+y, oz+z,
+                                        self[x,y,z]))
+
+        return queue
