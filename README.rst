@@ -6,9 +6,6 @@ PyClassic
 CPE (Classic Protcol Extension). It implements a block queue, an event system,
 map loader, and much more.
 
-If you have access to this repository, consider yourself lucky because this is
-a private project in order to prevent script kiddies from being annoying.
-
 Documentation can be found here:
 https://063ba2f779d68f7932612a3632b8096f.matthil.de
 
@@ -30,3 +27,8 @@ Currently, here are the features
    - automatic map download, keeping track of changes
    - detection of player join/leave and keep a list of players
    - responsive to /summon
+
+Licensing
+---------
+
+This project is licensed under the GNU GPLv3.
