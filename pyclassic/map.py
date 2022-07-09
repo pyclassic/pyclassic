@@ -14,8 +14,10 @@ or ClassicWorld (.cw) files
     quite trivial to parse.
 """
 # Map stuff
-import gzip, pyclassic
-from pyclassic.utils import decint, encint
+import gzip
+import pyclassic.queue as queue
+
+from .utils import decint, encint
 
 class ClassicMapError(Exception): pass
 
@@ -145,7 +147,7 @@ class ClassicMap:
             f.write(encint(ox) + encint(oy) + encint(oz))
             f.write(encint(self.width) + encint(self.height) + \
                     encint(self.length))
-            f.write(self.data)
+            f.write(b'\0\0\0\0' + self.blocks)
 
     def get_queue(self, ox = 0, oy = 0, oz = 0):
         """
@@ -164,7 +166,7 @@ class ClassicMap:
         :return: The queue converted from the map.
         :rtype:  list[:class:`pyclassic.queue.ThreadedQueue`]
         """
-        return [pyclassic.queue.Block(
+        return [queue.Block(
             *[x+y for x, y in zip(self.getpos(idx),(ox,oy,oz))], bid)
                 for idx, bid in enumerate(self.blocks)]
 
@@ -174,7 +176,7 @@ class ClassicMap:
         ax, ay, az = [min(a,b) for a, b in zip((x1,y1,z1), (x2,y2,z2))]
         bx, by, bz = [max(a,b) for a, b in zip((x1,y1,z1), (x2,y2,z2))]
 
-        queue = []
+        pqueue = []
         for x in range(ax, bx+1):
             for y in range(ay, by+1):
                 for z in range(az, bz+1):
@@ -182,7 +184,20 @@ class ClassicMap:
                        y >= self.height or \
                        z >= self.length:
                         continue
-                    queue.append(pyclassic.queue.Block(ox+x, oy+y, oz+z,
+                    pqueue.append(queue.Block(ox+x, oy+y, oz+z,
                                         self[x,y,z]))
 
-        return queue
+        return pqueue
+
+
+    def copy(self):
+        """
+        Copies the map
+
+        :return: A copy of this map.
+        :rtype: :class:`pyclassic.map.ClassicMap`
+        """
+
+        data = b'\0\0\0\0' + self.blocks.copy()
+        w, h, l = self.width, self.height, self.length
+        return ClassicMap(data, w, h, l, False)

@@ -12,7 +12,8 @@ anti-grief policies, this module is for you.
     unmoderated servers. Or maybe you can do a little trolling while
     no one is connected :troll:
 """
-import pyclassic, threading, time
+import threading, time
+import pyclassic.pyclassic as pyclassic
 from dataclasses import dataclass
 
 class QueueError(Exception): pass

@@ -9,8 +9,8 @@ This class allows the connection and packet handling as well as some
 additional methods to make programming easier.
 """
 import pyclassic, socket
-from pyclassic.utils import *
-from pyclassic.auth import SimpleAuth
+from .utils import *
+from .auth import SimpleAuth
 
 class Client:
     """
