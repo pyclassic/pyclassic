@@ -13,7 +13,6 @@ anti-grief policies, this module is for you.
     no one is connected :troll:
 """
 import threading, time
-import pyclassic.pyclassic as pyclassic
 from dataclasses import dataclass
 
 class QueueError(Exception): pass
@@ -51,14 +50,14 @@ class ThreadedQueue:
                                        PyClassic instance has no
                                        bot array.
     """
-    def __init__(self, player: pyclassic.PyClassic, map = None, delay = 0.03):
+    def __init__(self, player, map = None, delay = 0.03):
         self.current_queue = None
         self.queues = []
         self.thread = None
         self.thread_event = None
         self.delay = delay
 
-        if type(player) is pyclassic.PyClassic:
+        if type(player).__name__ == "PyClassic":
             self.map = player.map
             print(player.map)
             print(self.map)

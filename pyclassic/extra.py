@@ -3,6 +3,16 @@ from pyclassic.queue import Block
 from pyclassic.client import Client
 from pyclassic.auth import SimpleAuth
 
+def clone_army(prefix, mppass, amount):
+    """
+    :param prefix: Name prefix
+    :param mppass: Auth mppass
+    :param amount: Amount of bots to generate
+    :return: Array of bots
+    :rtype: list[:class:`pyclassic.auth.SimpleAuth`]
+    """
+    return [SimpleAuth(f"{prefix}{n}", mppass) for n in range(amount)]
+
 def throwaway(username, clientname = None, **kargs):
     """
     Makes a "throw-away" account. This can only be used on servers that

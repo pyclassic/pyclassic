@@ -46,7 +46,7 @@ class PyClassic:
     :raise pyclassic.PyClassicError: if the client parameter is invalid.
     """
     def __init__(self, client, multibot = [], client_name = None,
-                 build_delay = 0.03):
+                 build_delay = 0.03, mainbot_as_worker = False):
         # self.auth = auth
         if isinstance(client, pauth.SimpleAuth):
             # For backward compatibility but to also keep it
@@ -81,6 +81,7 @@ class PyClassic:
             self.client_name = client_name
 
         if self.clones != []:
+            if mainbot_as_worker: self.clones.append(self.client)
             self.queue = pqueue.ThreadedQueue(self,
                                                delay = build_delay)
 
@@ -238,8 +239,9 @@ class PyClassic:
         see :func:`pyclassic.client.Client.connect`
         """
         for bot in self.clones:
-            time.sleep(delay)
-            bot.connect(**kargs)
+            if not bot.socket:
+                time.sleep(delay)
+                bot.connect(**kargs)
     def disconnect_multibot(self):
         """
         Disconnects the whole bot army.
@@ -250,7 +252,6 @@ class PyClassic:
         
     ##################################################################
     ##################################################################
-
 
     async def event_loop(self):
         """
@@ -330,7 +331,6 @@ class PyClassic:
             self.loop.stop()
             return
     ##################################################################
-
     def run(self, delay = 4, **kargs): # TODO: finish
         """
         Connects all clients and run the event loop.
@@ -342,9 +342,8 @@ class PyClassic:
                       class.
         """
         err = None
-        self.connect(**kargs)
-        if self.clones:
-            self.connect_multibot(delay = delay, **kargs)
+        if self.client.socket: self.connect(**kargs)
+        if self.clones: self.connect_multibot(delay = delay, **kargs)
             
         self.loop = asyncio.get_event_loop()
         # self.loop.create_task(self.event_loop())
