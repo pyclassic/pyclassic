@@ -7,7 +7,7 @@ CPE (Classic Protcol Extension). It implements a block queue, an event system,
 map loader, and much more.
 
 Documentation can be found here:
-https://063ba2f779d68f7932612a3632b8096f.matthil.de
+https://pyclassic-docs.matthil.de
 
 Features
 --------
