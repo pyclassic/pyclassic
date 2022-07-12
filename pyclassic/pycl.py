@@ -98,6 +98,18 @@ class PyClassic:
         print("[!]", ' '.join(msg))
 
     ##################################################################
+    def get_event_name(self, name):
+        packetpref, pref = "on_packet_", "on_"
+        if name.startswith(packetpref):
+            t = find_packet_id(name[len(packetpref):].upper())
+            if t != -1:
+                return t
+        elif name.startswith(pref):
+            t = name[len(pref):].lower()
+            if t in ['recv', 'connect', 'move', 'set_block', 'event']:
+                return t
+        return None
+        
     def event(self, fn):
         """
         Decorator to define an event.
@@ -106,16 +118,11 @@ class PyClassic:
                    wanted event.
         :type fn: function
         """
-        packetpref, pref = "on_packet_", "on_"
         n = fn.__name__
-        if n.startswith(packetpref):
-            t = find_packet_id(n[len(packetpref):].upper())
-            if t == -1: return
+        t = self.get_event_name(n)
+
+        if t:
             self.event_functions[t] = fn
-        elif n.startswith(pref):
-            t = n[len(pref):].lower()
-            if t in ['recv', 'connect', 'move', 'set_block']:
-                self.event_functions[t] = fn
     ##################################################################
 
     def recv(self):
@@ -342,7 +349,7 @@ class PyClassic:
                       class.
         """
         err = None
-        if self.client.socket: self.connect(**kargs)
+        if not self.client.socket: self.connect(**kargs)
         if self.clones: self.connect_multibot(delay = delay, **kargs)
             
         self.loop = asyncio.get_event_loop()

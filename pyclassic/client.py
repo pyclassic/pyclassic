@@ -28,7 +28,7 @@ class Client:
         self.auth = auth
         self.socket = None
         if not client_name:
-            self.client_name = f"pyclassic {pyclassic.PYCLASSIC_VERSION}"
+            self.client_name = f"pyclassic"
         else:
             self.client_name = client_name
 
@@ -73,7 +73,10 @@ class Client:
         packet = encode_packet(packet_id_c[pid], *args)
         if not packet:
             raise PyClassicError("Invalid send packet.")
-        self.socket.sendall(bytes([pid]) + packet)
+        if self.socket:
+            self.socket.sendall(bytes([pid]) + packet)
+        else:
+            raise PyClassicError("Bot is disconnected.")
  
     def connect(self, **kargs):
         """

@@ -2,6 +2,7 @@
 This module contains some classes useful in authentication.
 """
 from pyclassic.utils import *
+import requests
 
 class SimpleAuth:
     """
