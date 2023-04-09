@@ -80,7 +80,7 @@ class PyClassic:
         else:
             self.client_name = client_name
 
-        if self.clones != []:
+        if self.clones != [] or mainbot_as_worker:
             if mainbot_as_worker: self.clones.append(self.client)
             self.queue = pqueue.ThreadedQueue(self,
                                                delay = build_delay)
